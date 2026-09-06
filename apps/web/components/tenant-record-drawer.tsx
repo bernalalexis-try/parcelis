@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Building2, Mail, PenLine, Phone, UserRound } from "lucide-react";
+import { formatInvoiceNumber } from "@parcelis/schemas";
 import {
   Button,
   Card,
@@ -251,7 +252,7 @@ export function TenantRecordDrawer({ onOpenChange, open, relatedTenants, tenantI
                           {invoices.map((invoice) => (
                             <TableRow key={invoice.id}>
                               <TableCell className="font-semibold">
-                                INV-{String(invoice.invoiceNumber).padStart(7, "0")}
+                                {formatInvoiceNumber(invoice.invoiceNumber)}
                               </TableCell>
                               <TableCell>{formatDate(invoice.dueOn)}</TableCell>
                               <TableCell>{formatCurrency(invoice.amountCents)}</TableCell>

@@ -21,6 +21,7 @@ import {
   Select,
 } from "@parcelis/ui";
 import { Plus, Trash2 } from "lucide-react";
+import { formatInvoiceNumber } from "@parcelis/schemas";
 import { apiClient } from "./api-client";
 import type { InvoiceActionInvoice } from "./invoice-actions";
 import { formatDate, getLocalDateInput } from "../lib/date";
@@ -142,7 +143,7 @@ export function RecordPaymentDrawer({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-white/60">Invoice ID</p>
-                  <p className="mt-1 font-semibold">INV-{String(invoice.invoiceNumber).padStart(7, "0")}</p>
+                  <p className="mt-1 font-semibold">{formatInvoiceNumber(invoice.invoiceNumber)}</p>
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-white/60">Subject</p>

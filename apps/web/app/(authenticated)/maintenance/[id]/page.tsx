@@ -38,7 +38,11 @@ import {
   DropdownMenuTrigger,
   Textarea,
 } from "@parcelis/ui";
-import { isActiveMaintenanceTicketStatus, isTerminalMaintenanceTicketStatus } from "@parcelis/schemas";
+import {
+  formatMaintenanceTicketNumber,
+  isActiveMaintenanceTicketStatus,
+  isTerminalMaintenanceTicketStatus,
+} from "@parcelis/schemas";
 import { apiClient } from "../../../../components/api-client";
 import { LoadingState } from "../../../../components/loading-state";
 import { NotesDrawer } from "../../../../components/notes-drawer";
@@ -61,7 +65,6 @@ const formatDateTime = (value: Date | string) =>
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(value));
-const formatTicketNumber = (ticketNumber: number) => `MNT-${ticketNumber.toString().padStart(7, "0")}`;
 type ActivityEventSummary = {
   id: number;
   subjectLabel: string;
@@ -106,7 +109,9 @@ export default function MaintenanceTicketPage() {
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: ["maintenance", "byId", id] }),
-        queryClient.invalidateQueries({ queryKey: ["activityEvents", "list", { subjectType: "maintenance_ticket", subjectId: id }] }),
+        queryClient.invalidateQueries({
+          queryKey: ["activityEvents", "list", { subjectType: "maintenance_ticket", subjectId: id }],
+        }),
       ]),
   });
   const resolveTicket = useMutation({
@@ -120,7 +125,9 @@ export default function MaintenanceTicketPage() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["maintenance", "byId", id] }),
         queryClient.invalidateQueries({ queryKey: ["notes", "list", { maintenanceTicketId: id, limit: 5 }] }),
-        queryClient.invalidateQueries({ queryKey: ["activityEvents", "list", { subjectType: "maintenance_ticket", subjectId: id }] }),
+        queryClient.invalidateQueries({
+          queryKey: ["activityEvents", "list", { subjectType: "maintenance_ticket", subjectId: id }],
+        }),
       ]);
     },
   });
@@ -130,7 +137,9 @@ export default function MaintenanceTicketPage() {
       Promise.all([
         queryClient.invalidateQueries({ queryKey: ["maintenance", "byId", id] }),
         queryClient.invalidateQueries({ queryKey: ["notes", "list", { maintenanceTicketId: id, limit: 5 }] }),
-        queryClient.invalidateQueries({ queryKey: ["activityEvents", "list", { subjectType: "maintenance_ticket", subjectId: id }] }),
+        queryClient.invalidateQueries({
+          queryKey: ["activityEvents", "list", { subjectType: "maintenance_ticket", subjectId: id }],
+        }),
       ]),
   });
   const cancelTicket = useMutation({
@@ -139,7 +148,9 @@ export default function MaintenanceTicketPage() {
       Promise.all([
         queryClient.invalidateQueries({ queryKey: ["maintenance", "byId", id] }),
         queryClient.invalidateQueries({ queryKey: ["notes", "list", { maintenanceTicketId: id, limit: 5 }] }),
-        queryClient.invalidateQueries({ queryKey: ["activityEvents", "list", { subjectType: "maintenance_ticket", subjectId: id }] }),
+        queryClient.invalidateQueries({
+          queryKey: ["activityEvents", "list", { subjectType: "maintenance_ticket", subjectId: id }],
+        }),
       ]).then(() => {
         setCancellationNote("");
         setIsCancellationNoteOpen(false);
@@ -322,7 +333,7 @@ export default function MaintenanceTicketPage() {
                     </span>
                     <div>
                       <p className="text-sm font-semibold uppercase tracking-[0.18em] text-parcelis-green">
-                        {formatTicketNumber(ticket.ticketNumber)}
+                        {formatMaintenanceTicketNumber(ticket.ticketNumber)}
                       </p>
                       <h1 className="mt-3 text-3xl font-bold">{ticket.title}</h1>
                       <p className="mt-2 text-sm text-white/75">
@@ -449,7 +460,7 @@ export default function MaintenanceTicketPage() {
                       <div>
                         <p className="text-xs font-semibold uppercase text-parcelis-gray">Ticket number</p>
                         <p className="mt-1 font-semibold text-parcelis-charcoal">
-                          {formatTicketNumber(ticket.ticketNumber)}
+                          {formatMaintenanceTicketNumber(ticket.ticketNumber)}
                         </p>
                       </div>
                       <div>
@@ -516,13 +527,13 @@ export default function MaintenanceTicketPage() {
                         </div>
                       ) : (
                         <div className="flex flex-col items-center justify-center rounded-md border border-dashed border-parcelis-border bg-parcelis-porcelain/50 px-4 py-10 text-center dark:bg-parcelis-charcoal/55">
-                        <Image className="h-10 w-10 text-parcelis-green" />
+                          <Image className="h-10 w-10 text-parcelis-green" />
                           <span className="mt-3 text-sm font-semibold text-parcelis-charcoal dark:text-white">
                             No photos attached
                           </span>
-                        <span className="mt-1 text-xs text-parcelis-gray">
-                          Attached photos will be available in the gallery.
-                        </span>
+                          <span className="mt-1 text-xs text-parcelis-gray">
+                            Attached photos will be available in the gallery.
+                          </span>
                         </div>
                       )}
                     </CardContent>
@@ -648,7 +659,9 @@ export default function MaintenanceTicketPage() {
                       {activityEventsQuery.isLoading ? (
                         <LoadingState className="min-h-32" label="Loading activity…" />
                       ) : activityEventsQuery.error ? (
-                        <p className="p-5 text-sm font-medium text-red-700">Unable to load activity. Please try again.</p>
+                        <p className="p-5 text-sm font-medium text-red-700">
+                          Unable to load activity. Please try again.
+                        </p>
                       ) : activityEvents.length ? (
                         <ul className="divide-y divide-parcelis-border">
                           {activityEvents.map((event) => (
@@ -668,7 +681,7 @@ export default function MaintenanceTicketPage() {
                                   <p className="mt-1 text-parcelis-gray">{event.subjectLabel}</p>
                                 )}
                                 <p className="mt-1 text-xs font-semibold text-parcelis-green">
-                                  {event.subjectReference ?? formatTicketNumber(ticket.ticketNumber)}
+                                  {event.subjectReference ?? formatMaintenanceTicketNumber(ticket.ticketNumber)}
                                 </p>
                               </div>
                               <time className="shrink-0 text-parcelis-gray">{formatDateTime(event.createdAt)}</time>

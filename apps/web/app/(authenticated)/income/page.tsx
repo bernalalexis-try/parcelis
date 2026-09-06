@@ -18,12 +18,12 @@ import {
   TableHeader,
   TableRow,
 } from "@parcelis/ui";
+import { formatInvoiceNumber } from "@parcelis/schemas";
 import { apiClient, queryKeys } from "../../../components/api-client";
 import { LoadingState } from "../../../components/loading-state";
 import { InvoiceDrawer } from "../../../components/invoice-drawer";
 import { PageRail } from "../../../components/page-rail";
 import { getInvoiceLink } from "../../../lib/entity-links";
-
 
 function formatCurrency(cents: number) {
   return new Intl.NumberFormat("en-US", {
@@ -337,7 +337,7 @@ function IncomePageContent() {
                                             className="text-parcelis-green hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parcelis-green"
                                             href={getInvoiceLink(Number.parseInt(String(persistedInvoice.id), 10))}
                                           >
-                                            INV-{String(persistedInvoice.invoiceNumber).padStart(7, "0")}
+                                            {formatInvoiceNumber(persistedInvoice.invoiceNumber)}
                                           </Link>
                                         ) : (
                                           invoice.id
@@ -430,7 +430,7 @@ function IncomePageContent() {
                                 className="font-medium text-parcelis-green hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parcelis-green"
                                 href={getInvoiceLink(Number.parseInt(String(persistedInvoice.id), 10))}
                               >
-                                INV-{String(persistedInvoice.invoiceNumber).padStart(7, "0")}
+                                {formatInvoiceNumber(persistedInvoice.invoiceNumber)}
                               </Link>
                             ) : (
                               <span className="font-medium text-parcelis-charcoal">{invoice.id}</span>

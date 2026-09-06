@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { formatInvoiceNumber } from "@parcelis/schemas";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -57,7 +58,6 @@ import { EntityLifecycleControls } from "../../../../components/entity-lifecycle
 import { StickyNotePlusIcon } from "../../../../components/sticky-note-plus-icon";
 import { entityUpdatedMessage } from "../../../../components/toast-messages";
 import { getInvoiceLink, getPropertyLink, getTenantInvoicesLink } from "../../../../lib/entity-links";
-
 
 function formatDate(date: Date | string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -205,7 +205,7 @@ export default function TenantDetailPage() {
   const rentCollectedCents = Math.max(currentInvoiceCents - overdueCents, 0);
   const otherCollectedCents = 0;
   const totalCollectedCents = rentCollectedCents + otherCollectedCents;
-  const currentInvoiceId = currentInvoice ? `INV-${String(currentInvoice.invoiceNumber).padStart(7, "0")}` : null;
+  const currentInvoiceId = currentInvoice ? formatInvoiceNumber(currentInvoice.invoiceNumber) : null;
   const pastDueInvoiceId = currentInvoice?.status === "overdue" ? currentInvoiceId : null;
 
   function openTenantDrawer() {
