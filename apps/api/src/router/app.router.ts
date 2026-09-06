@@ -3061,8 +3061,29 @@ export const appRouter = router({
           where: { id: input.invoiceId, organizationId: ctx.organization.organizationId },
         });
       } else {
-        await ctx.prisma.maintenanceTicket.findFirstOrThrow({
-          where: { id: input.maintenanceTicketId, organizationId: ctx.organization.organizationId },
+        return ctx.prisma.$transaction(async (tx) => {
+          const ticket = await tx.maintenanceTicket.findFirstOrThrow({
+            where: { id: input.maintenanceTicketId, organizationId: ctx.organization.organizationId },
+          });
+          const note = await tx.note.create({
+            data: input,
+            select: { id: true, body: true, createdAt: true, updatedAt: true },
+          });
+          await tx.activityEvent.create({
+            data: {
+              organizationId: ticket.organizationId,
+              subjectType: ActivitySubjectType.maintenance_ticket,
+              subjectId: ticket.id,
+              subjectLabel: ticket.title,
+              subjectReference: formatMaintenanceTicketNumber(ticket.ticketNumber),
+              propertyId: ticket.propertyId,
+              action: "maintenance.note_added",
+              metadata: { noteId: note.id },
+              actorId: String(ctx.user.id),
+              actorLabel: ctx.user.name,
+            },
+          });
+          return note;
         });
       }
       return ctx.prisma.note.create({
