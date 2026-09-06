@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -99,6 +99,7 @@ function getInvoiceRows(startDate: Date | string, amountCents: number) {
 
 export default function UnitDetailPage() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const params = useParams<{ id: string; unitId: string }>();
   const propertyId = Number(params.id);
   const unitId = Number(params.unitId);
@@ -154,17 +155,29 @@ export default function UnitDetailPage() {
       attachments: File[];
     }) => {
       const ticket = await apiClient.maintenance.create.mutate(input);
-      await Promise.all(attachments.map((file) => uploadMaintenanceImage(ticket.id, file)));
-      return ticket;
+      const uploads = await Promise.allSettled(attachments.map((file) => uploadMaintenanceImage(ticket.id, file)));
+      const failedAttachments = attachments.filter((_, index) => uploads[index]?.status === "rejected");
+      return { ticket, failedAttachments };
     },
-    onSuccess: async (ticket) => {
+    onSuccess: async ({ ticket, failedAttachments }) => {
       setIsMaintenanceDrawerOpen(false);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.properties.byId(propertyId) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.properties.list }),
         queryClient.invalidateQueries({ queryKey: ["maintenance", "list"] }),
       ]);
-      toast.success(entityCreatedMessage("Maintenance", ticket.title));
+      if (failedAttachments.length) {
+        toast.error("Maintenance ticket created, but some photos could not be attached.", {
+          description: `Failed: ${failedAttachments.map((file) => file.name).join(", ")}. A user with maintenance edit permission can add these photos using Edit Maintenance on the ticket.`,
+          duration: Infinity,
+          action: {
+            label: "View ticket",
+            onClick: () => router.push(getMaintenanceLink(ticket.id)),
+          },
+        });
+      } else {
+        toast.success(entityCreatedMessage("Maintenance", ticket.title));
+      }
     },
   });
   const [isEditDrawerOpen, setIsEditDrawerOpen] = React.useState(false);
@@ -290,7 +303,7 @@ export default function UnitDetailPage() {
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button className="hidden rounded-none border-l-0 md:inline-flex" variant="secondary">
+                  <Button className="rounded-r-none md:rounded-none md:border-l-0" variant="secondary">
                     All Units
                     <ChevronDown className="h-4 w-4" />
                   </Button>
@@ -316,7 +329,7 @@ export default function UnitDetailPage() {
               </DropdownMenu>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button className="md:min-w-40 md:rounded-l-none md:border-l-0" disabled={!unit} variant="secondary">
+                  <Button className="rounded-l-none border-l-0 md:min-w-40" disabled={!unit} variant="secondary">
                     Actions
                     <ChevronDown className="h-4 w-4" />
                   </Button>
