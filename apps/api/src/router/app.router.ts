@@ -162,6 +162,20 @@ function maintenanceStatusAction(previousStatus: MaintenanceTicketStatus, nextSt
   return "maintenance.status_changed";
 }
 
+async function recordActivityEvent(
+  tx: Prisma.TransactionClient,
+  data: Omit<Prisma.ActivityEventUncheckedCreateInput, "actorId" | "actorLabel">,
+  actor?: { id: string | number; name: string },
+) {
+  await tx.activityEvent.create({
+    data: {
+      ...data,
+      actorId: actor ? String(actor.id) : null,
+      actorLabel: actor?.name ?? null,
+    },
+  });
+}
+
 async function recordMaintenanceStatusEvent(
   tx: Prisma.TransactionClient,
   ticket: { id: number; organizationId: number; propertyId: number; ticketNumber: number; title: string },
@@ -170,18 +184,16 @@ async function recordMaintenanceStatusEvent(
 ) {
   if (previousStatus === nextStatus) return;
 
-  await tx.activityEvent.create({
-    data: {
-      organizationId: ticket.organizationId,
-      subjectType: ActivitySubjectType.maintenance_ticket,
-      subjectId: ticket.id,
-      subjectLabel: ticket.title,
-      subjectReference: formatMaintenanceTicketNumber(ticket.ticketNumber),
-      propertyId: ticket.propertyId,
-      action: maintenanceStatusAction(previousStatus, nextStatus),
-      previousStatus,
-      nextStatus,
-    },
+  await recordActivityEvent(tx, {
+    organizationId: ticket.organizationId,
+    subjectType: ActivitySubjectType.maintenance_ticket,
+    subjectId: ticket.id,
+    subjectLabel: ticket.title,
+    subjectReference: formatMaintenanceTicketNumber(ticket.ticketNumber),
+    propertyId: ticket.propertyId,
+    action: maintenanceStatusAction(previousStatus, nextStatus),
+    previousStatus,
+    nextStatus,
   });
 }
 
@@ -192,8 +204,9 @@ async function recordInvoiceActivity(
   metadata?: Prisma.InputJsonValue,
   actor?: { id: string | number; name: string },
 ) {
-  await tx.activityEvent.create({
-    data: {
+  await recordActivityEvent(
+    tx,
+    {
       organizationId: invoice.organizationId,
       subjectType: ActivitySubjectType.invoice,
       subjectId: invoice.id,
@@ -202,10 +215,9 @@ async function recordInvoiceActivity(
       propertyId: invoice.propertyId,
       action,
       metadata,
-      actorId: actor ? String(actor.id) : null,
-      actorLabel: actor?.name ?? null,
     },
-  });
+    actor,
+  );
 }
 
 function withPropertyNotes<T extends { legacyNotes: string | null }>(property: T) {
@@ -3069,8 +3081,9 @@ export const appRouter = router({
             data: input,
             select: { id: true, body: true, createdAt: true, updatedAt: true },
           });
-          await tx.activityEvent.create({
-            data: {
+          await recordActivityEvent(
+            tx,
+            {
               organizationId: ticket.organizationId,
               subjectType: ActivitySubjectType.maintenance_ticket,
               subjectId: ticket.id,
@@ -3079,10 +3092,9 @@ export const appRouter = router({
               propertyId: ticket.propertyId,
               action: "maintenance.note_added",
               metadata: { noteId: note.id },
-              actorId: String(ctx.user.id),
-              actorLabel: ctx.user.name,
             },
-          });
+            ctx.user,
+          );
           return note;
         });
       }
