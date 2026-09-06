@@ -39,7 +39,11 @@ import {
   DropdownMenuTrigger,
   Textarea,
 } from "@parcelis/ui";
-import { isActiveMaintenanceTicketStatus, isTerminalMaintenanceTicketStatus } from "@parcelis/schemas";
+import {
+  formatMaintenanceTicketNumber,
+  isActiveMaintenanceTicketStatus,
+  isTerminalMaintenanceTicketStatus,
+} from "@parcelis/schemas";
 import { hasPermission } from "../../../../components/property-access";
 import { apiClient, queryKeys } from "../../../../components/api-client";
 import { LoadingState } from "../../../../components/loading-state";
@@ -63,7 +67,6 @@ const formatDateTime = (value: Date | string) =>
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(value));
-const formatTicketNumber = (ticketNumber: number) => `MNT-${ticketNumber.toString().padStart(7, "0")}`;
 type ActivityEventSummary = {
   id: number;
   subjectLabel: string;
@@ -391,7 +394,7 @@ export default function MaintenanceTicketPage() {
                     </span>
                     <div>
                       <p className="text-sm font-semibold uppercase tracking-[0.18em] text-parcelis-green">
-                        {formatTicketNumber(ticket.ticketNumber)}
+                        {formatMaintenanceTicketNumber(ticket.ticketNumber)}
                       </p>
                       <h1 className="mt-3 text-3xl font-bold">{ticket.title}</h1>
                       <p className="mt-2 text-sm text-white/75">
@@ -518,7 +521,7 @@ export default function MaintenanceTicketPage() {
                       <div>
                         <p className="text-xs font-semibold uppercase text-parcelis-gray">Ticket number</p>
                         <p className="mt-1 font-semibold text-parcelis-charcoal">
-                          {formatTicketNumber(ticket.ticketNumber)}
+                          {formatMaintenanceTicketNumber(ticket.ticketNumber)}
                         </p>
                       </div>
                       <div>
@@ -739,7 +742,7 @@ export default function MaintenanceTicketPage() {
                                   <p className="mt-1 text-parcelis-gray">{event.subjectLabel}</p>
                                 )}
                                 <p className="mt-1 text-xs font-semibold text-parcelis-green">
-                                  {event.subjectReference ?? formatTicketNumber(ticket.ticketNumber)}
+                                  {event.subjectReference ?? formatMaintenanceTicketNumber(ticket.ticketNumber)}
                                 </p>
                               </div>
                               <time className="shrink-0 text-parcelis-gray">{formatDateTime(event.createdAt)}</time>

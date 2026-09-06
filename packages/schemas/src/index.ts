@@ -5,6 +5,14 @@ const maxDatabaseInteger = 2_147_483_647;
 export const imageUploadMaxSizeBytes = 2 * 1024 * 1024;
 export const imageUploadMaxSizeMessage = `Images must be ${imageUploadMaxSizeBytes / 1024 / 1024} MB or smaller.`;
 
+export function formatInvoiceNumber(invoiceNumber: number) {
+  return `INV-${String(invoiceNumber).padStart(7, "0")}`;
+}
+
+export function formatMaintenanceTicketNumber(ticketNumber: number) {
+  return `MNT-${String(ticketNumber).padStart(7, "0")}`;
+}
+
 export const authCredentialsInputSchema = z.object({
   email: z
     .string()

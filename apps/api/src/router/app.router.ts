@@ -70,6 +70,8 @@ import {
   userRoleValues,
   type PermissionAction,
   type PermissionResource,
+  formatInvoiceNumber,
+  formatMaintenanceTicketNumber,
 } from "@parcelis/schemas";
 import {
   ActivitySubjectType,
@@ -174,7 +176,7 @@ async function recordMaintenanceStatusEvent(
       subjectType: ActivitySubjectType.maintenance_ticket,
       subjectId: ticket.id,
       subjectLabel: ticket.title,
-      subjectReference: `MNT-${ticket.ticketNumber.toString().padStart(7, "0")}`,
+      subjectReference: formatMaintenanceTicketNumber(ticket.ticketNumber),
       propertyId: ticket.propertyId,
       action: maintenanceStatusAction(previousStatus, nextStatus),
       previousStatus,
@@ -196,7 +198,7 @@ async function recordInvoiceActivity(
       subjectType: ActivitySubjectType.invoice,
       subjectId: invoice.id,
       subjectLabel: `Invoice ${invoice.invoiceNumber}`,
-      subjectReference: `INV-${invoice.invoiceNumber.toString().padStart(7, "0")}`,
+      subjectReference: formatInvoiceNumber(invoice.invoiceNumber),
       propertyId: invoice.propertyId,
       action,
       metadata,
@@ -2066,7 +2068,7 @@ export const appRouter = router({
           if (existingInvoice) {
             throw new TRPCError({
               code: "CONFLICT",
-              message: `An invoice already exists for this lease and billing date (INV-${existingInvoice.invoiceNumber.toString().padStart(7, "0")}).`,
+              message: `An invoice already exists for this lease and billing date (${formatInvoiceNumber(existingInvoice.invoiceNumber)}).`,
             });
           }
 
