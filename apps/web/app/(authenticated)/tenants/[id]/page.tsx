@@ -537,7 +537,7 @@ export default function TenantDetailPage() {
                   ) : null}
                   {canCreateLease && tenant?.tenantStatus !== "archived" ? (
                     <Button
-                      className={`hidden min-w-40 md:inline-flex ${canEditTenant || prioritizeUnarchive ? "rounded-none border-l-0" : "rounded-r-none"}`}
+                      className={`hidden min-w-40 md:inline-flex ${canEditTenant ? "rounded-none border-l-0" : "rounded-r-none"}`}
                       disabled={!tenant}
                       onClick={() => setIsLeaseDialogOpen(true)}
                       variant="secondary"
