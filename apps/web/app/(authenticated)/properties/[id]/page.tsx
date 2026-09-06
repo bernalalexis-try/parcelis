@@ -276,6 +276,7 @@ export default function PropertyDetailPage() {
             </Button>
             <EntityLifecycleControls
               presentation="dropdown"
+              hasLeadingAction
               archiveDescription={
                 <>This will hide {property?.name ?? "this property"} from the default properties view.</>
               }

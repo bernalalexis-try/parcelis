@@ -81,18 +81,17 @@ export default function LeaseDetailPage() {
   const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
   const canViewLease = hasPermission(currentUserQuery.data?.permissions, "leases", "view");
   const canEditLease = canViewLease && hasPermission(currentUserQuery.data?.permissions, "leases", "edit");
-  const propertiesQuery = useQuery({
+  const leaseQuery = useQuery({
     enabled: canViewLease,
-    queryKey: queryKeys.properties.list,
-    queryFn: () => apiClient.properties.list.query(),
+    queryKey: queryKeys.leases.byId(leaseId),
+    queryFn: () => apiClient.leases.byId.query({ id: leaseId }),
   });
-  const leaseRecord = (canViewLease ? (propertiesQuery.data ?? []) : [])
-    .flatMap((property) => property.leases.map((lease) => ({ ...lease, property })))
-    .find((lease) => lease.id === leaseId);
-  const unit = leaseRecord?.property.units.find((item) => item.name === leaseRecord.unitLabel);
+  const leaseRecord = canViewLease ? leaseQuery.data : null;
+  const unit = leaseRecord?.unit;
   const firstInvoice = leaseRecord?.invoices[0];
   const refreshLeaseData = async () => {
     await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["leases"] }),
       queryClient.invalidateQueries({ queryKey: ["properties"] }),
       queryClient.invalidateQueries({ queryKey: ["tenants"] }),
     ]);
@@ -123,13 +122,18 @@ export default function LeaseDetailPage() {
                 </Button>
               ) : null}
               {hasPermission(currentUserQuery.data?.permissions, "leases", "create") ? (
-                <Button disabled={!leaseRecord} className="hidden rounded-none border-l-0 md:inline-flex" variant="secondary">
+                <Button
+                  disabled={!leaseRecord}
+                  className={`hidden md:inline-flex ${canEditLease ? "rounded-none border-l-0" : "rounded-r-none"}`}
+                  variant="secondary"
+                >
                   <RefreshCw className="h-4 w-4" />
                   Renew Lease
                 </Button>
               ) : null}
               <EntityLifecycleControls
                 presentation="dropdown"
+                hasLeadingAction={canEditLease || hasPermission(currentUserQuery.data?.permissions, "leases", "create")}
                 archiveDescription="This hides the lease from the default lease directory while preserving its status, tenant assignments, and invoices. Archiving does not terminate the lease."
                 canArchive={hasPermission(currentUserQuery.data?.permissions, "leases", "archive")}
                 canDelete={hasPermission(currentUserQuery.data?.permissions, "leases", "delete")}
@@ -190,13 +194,24 @@ export default function LeaseDetailPage() {
         <div className="parcelis-page-shell">
           {currentUserQuery.isLoading ? (
             <LoadingState label="Loading lease…" />
+          ) : currentUserQuery.error ? (
+            <div role="alert" className="space-y-3 rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700">
+              <p>{currentUserQuery.error.message}</p>
+              <Button
+                variant="secondary"
+                onClick={() => void currentUserQuery.refetch()}
+                disabled={currentUserQuery.isFetching}
+              >
+                Retry
+              </Button>
+            </div>
           ) : !canViewLease ? (
             <p className="text-sm text-parcelis-gray">You do not have permission to view leases.</p>
-          ) : propertiesQuery.isLoading ? (
+          ) : leaseQuery.isLoading ? (
             <LoadingState label="Loading lease…" />
-          ) : propertiesQuery.error ? (
+          ) : leaseQuery.error ? (
             <div className="min-h-48 rounded-lg border border-red-200 bg-red-50 p-5 text-sm font-medium text-red-700">
-              {propertiesQuery.error.message}
+              {leaseQuery.error.message}
             </div>
           ) : !leaseRecord ? (
             <div className="min-h-48 rounded-lg border border-parcelis-border bg-white p-5 text-sm text-parcelis-gray">
@@ -214,7 +229,7 @@ export default function LeaseDetailPage() {
                       Lease details
                     </p>
                     <h1 className="mt-5 text-2xl font-bold md:text-4xl">
-                      {leaseRecord.property.name} | Unit {leaseRecord.unitLabel}{" "}
+                      {leaseRecord.property.name} | Unit {leaseRecord.unit.name}{" "}
                     </h1>
                     <p className="mt-3 text-md leading-6 text-white/75">
                       {formatDate(leaseRecord.startsOn)} · {formatDate(leaseRecord.endsOn)}
@@ -260,10 +275,10 @@ export default function LeaseDetailPage() {
                           className="font-semibold text-parcelis-green hover:underline"
                           href={getUnitLink(leaseRecord.property.id, unit.id)}
                         >
-                          Unit {leaseRecord.unitLabel}
+                          Unit {leaseRecord.unit.name}
                         </Link>
                       ) : (
-                        `Unit ${leaseRecord.unitLabel}`
+                        `Unit ${leaseRecord.unit.name}`
                       )}
                     </Detail>
                     <Detail icon={CalendarDays} label="Lease Start">

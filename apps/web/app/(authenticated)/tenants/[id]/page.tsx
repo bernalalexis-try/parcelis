@@ -521,6 +521,7 @@ export default function TenantDetailPage() {
             <EntityLifecycleControls
               presentation="dropdown"
               promoteReactivate
+              hasLeadingAction={canEditTenant || (canCreateLease && tenant?.tenantStatus !== "archived")}
               headerActions={
                 <>
                   {canEditTenant ? (
@@ -536,7 +537,7 @@ export default function TenantDetailPage() {
                   ) : null}
                   {canCreateLease && tenant?.tenantStatus !== "archived" ? (
                     <Button
-                      className="hidden min-w-40 rounded-none border-l-0 md:inline-flex"
+                      className={`hidden min-w-40 md:inline-flex ${canEditTenant || prioritizeUnarchive ? "rounded-none border-l-0" : "rounded-r-none"}`}
                       disabled={!tenant}
                       onClick={() => setIsLeaseDialogOpen(true)}
                       variant="secondary"

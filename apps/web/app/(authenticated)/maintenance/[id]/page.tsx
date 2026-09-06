@@ -334,9 +334,9 @@ export default function MaintenanceTicketPage() {
                     Acknowledge
                   </DropdownMenuItem>
                 ) : null}
-                {ticket && isActiveMaintenanceTicketStatus(ticket.status) ? (
+                {ticket && ticket.status !== "new" && isActiveMaintenanceTicketStatus(ticket.status) ? (
                   <DropdownMenuItem
-                    className={ticket.status === "new" ? undefined : "md:hidden"}
+                    className="md:hidden"
                     disabled={!canEditTicket || resolveTicket.isPending}
                     onSelect={() => (hasRecentNote ? resolveTicket.mutate(undefined) : setIsResolutionNoteOpen(true))}
                   >

@@ -23,6 +23,7 @@ type EntityLifecycleControlsProps = {
   presentation?: "buttons" | "dropdown";
   children?: React.ReactNode;
   headerActions?: React.ReactNode;
+  hasLeadingAction?: boolean;
   promoteReactivate?: boolean;
   archiveDescription: React.ReactNode;
   canArchive: boolean;
@@ -44,6 +45,7 @@ export function EntityLifecycleControls({
   presentation = "buttons",
   children,
   headerActions,
+  hasLeadingAction = false,
   promoteReactivate = false,
   archiveDescription,
   canArchive,
@@ -148,6 +150,7 @@ export function EntityLifecycleControls({
   );
 
   if (presentation === "dropdown") {
+    const hasDesktopNeighbor = hasLeadingAction || (promoteReactivate && canArchive && isArchived);
     const displayLabel = entityLabel.charAt(0).toUpperCase() + entityLabel.slice(1);
     return (
       <>
@@ -172,7 +175,7 @@ export function EntityLifecycleControls({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  className="min-w-10 md:min-w-40 md:rounded-l-none md:border-l-0"
+                  className={`min-w-10 md:min-w-40 ${hasDesktopNeighbor ? "md:rounded-l-none md:border-l-0" : ""}`}
                   disabled={!isAvailable}
                   variant="secondary"
                 >

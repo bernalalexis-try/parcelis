@@ -102,7 +102,7 @@ export default function LeasesPage() {
     const days = (new Date(lease.endsOn).getTime() - Date.now()) / 86400000;
     return days >= 0 && days <= 90;
   });
-  const activeFilterCount = Number(appliedFilters.status !== "all") + Number(appliedFilters.archived !== "active");
+  const activeFilterCount = Number(appliedFilters.status !== "all") + Number(appliedFilters.archived === "archived");
   const groupedLeases = Array.from(
     filteredLeases.reduce((groups, lease) => {
       const group = groups.get(lease.property.id) ?? { name: lease.property.name, leases: [] as typeof filteredLeases };

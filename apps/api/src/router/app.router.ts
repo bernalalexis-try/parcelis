@@ -3173,6 +3173,29 @@ export const appRouter = router({
     }),
   }),
   leases: router({
+    /** Retrieves a lease and its identifying property, unit, and tenant context. */
+    byId: permissionProcedure("leases", "view")
+      .input(leaseByIdInputSchema)
+      .query(async ({ ctx, input }) => {
+        const lease = await ctx.prisma.lease.findFirst({
+          where: { id: input.id, organizationId: ctx.organization.organizationId },
+          select: {
+            id: true,
+            archivedAt: true,
+            status: true,
+            startsOn: true,
+            endsOn: true,
+            monthlyRentCents: true,
+            property: { select: { id: true, name: true } },
+            unit: { select: { id: true, name: true } },
+            tenants: {
+              select: { tenant: { select: { id: true, firstName: true, lastName: true } } },
+            },
+            invoices: { orderBy: { dueOn: "asc" }, take: 1, select: { dueOn: true } },
+          },
+        });
+        return lease ? { ...lease, tenants: lease.tenants.map(({ tenant }) => tenant) } : null;
+      }),
     /** Archives a lease without changing its contractual status. */
     archive: permissionProcedure("leases", "archive")
       .input(leaseByIdInputSchema)

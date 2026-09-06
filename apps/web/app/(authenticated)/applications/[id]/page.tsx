@@ -178,6 +178,7 @@ export default function ApplicationDetailPage() {
             </Button>
             <EntityLifecycleControls
               presentation="dropdown"
+              hasLeadingAction
               archiveDescription={<>This will mark {application ? applicantName : "this application"} as archived.</>}
               cancelDeleteLabel="Keep Application"
               canArchive={hasPermission(currentUserQuery.data?.permissions, "applications", "archive")}
