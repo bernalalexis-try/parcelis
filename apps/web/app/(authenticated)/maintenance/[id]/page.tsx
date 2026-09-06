@@ -39,7 +39,11 @@ import {
   DropdownMenuTrigger,
   Textarea,
 } from "@parcelis/ui";
-import { isActiveMaintenanceTicketStatus, isTerminalMaintenanceTicketStatus } from "@parcelis/schemas";
+import {
+  formatMaintenanceTicketNumber,
+  isActiveMaintenanceTicketStatus,
+  isTerminalMaintenanceTicketStatus,
+} from "@parcelis/schemas";
 import { hasPermission } from "../../../../components/property-access";
 import { apiClient, queryKeys } from "../../../../components/api-client";
 import { LoadingState } from "../../../../components/loading-state";
